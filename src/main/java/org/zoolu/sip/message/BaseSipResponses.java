@@ -33,6 +33,7 @@ package org.zoolu.sip.message;
  * corrspondent to the various SIP response codes
  */
 public abstract class BaseSipResponses {
+
     //static Hashtable reasons;
     protected static String[] reasons;
 

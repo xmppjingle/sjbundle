@@ -33,6 +33,8 @@ package org.zoolu.sip.message;
  * corrspondent to the various SIP response codes
  */
 public class SipResponses extends BaseSipResponses {
+    public static final int[] ackRequiredCodes = {483, 408, 186, 486, 487, 480, 415, 400, 481, 603, 404, 476, 403, 489, 412, 405, 475, 485, 500, 406, 503, 402, 488, 183};
+
     private static boolean isInit = false;
 
     public static void init() {

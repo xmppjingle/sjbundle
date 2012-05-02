@@ -97,7 +97,7 @@ public class SipStack {
      */
     public static long max_retransmission_timeout = 4000;
     /**
-     * transaction timeout (milliseconds); RFC2361 suggests 64*T1=32000ms
+     * session timeout (milliseconds); RFC2361 suggests 64*T1=32000ms
      */
     public static long transaction_timeout = 32000;
     /**

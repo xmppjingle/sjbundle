@@ -52,7 +52,7 @@ import org.zoolu.sip.address.SipURL;
  * if the To header field does not address a known or current user of
  * this UAS.  If, on the other hand, the UAS decides to reject the
  * request, it SHOULD generate a response with a 403 (Forbidden) status
- * code and pass it to the server transaction for transmission.
+ * code and pass it to the server session for transmission.
  */
 public class ToHeader extends EndPointHeader {
     //public ToHeader()

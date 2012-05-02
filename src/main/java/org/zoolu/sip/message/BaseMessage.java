@@ -505,7 +505,7 @@ public abstract class BaseMessage {
     //**************************** Generic Headers ****************************/
 
     /**
-     * Returns the transaction method
+     * Returns the session method
      *
      * @return
      */

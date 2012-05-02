@@ -34,14 +34,14 @@ import org.zoolu.sip.provider.SipParser;
 
 /**
  * SIP Header Via.
- * The Via header field indicates the transport used for the transaction
+ * The Via header field indicates the transport used for the session
  * and identifies the location where the response is to be sent.
  * <BR> When the UAC creates a request, it MUST insert a Via into that
  * request.  The protocol name and protocol version in the header field
  * is SIP and 2.0, respectively.
  * <BR> The Via header field value MUST
  * contain a branch parameter.  This parameter is used to identify the
- * transaction created by that request.  This parameter is used by both
+ * session created by that request.  This parameter is used by both
  * the client and the server.
  * <BR> The branch parameter value MUST be unique across space and time for
  * all requests sent by the UA.  The exceptions to this rule are CANCEL
