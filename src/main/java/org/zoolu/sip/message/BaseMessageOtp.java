@@ -149,7 +149,7 @@ public abstract class BaseMessageOtp extends BaseMessage {
         }
         ContentLengthHeader clh = getContentLengthHeader();
         if (clh != null) {
-            int len = clh.getContentLength();
+            int len = clh.getContentLength() + 100; // TODO Remove Patch for Buggy SIP Servers
             body = par.getString(len);
         } else if (getContentTypeHeader() != null) {
             body = par.getRemainingString();
