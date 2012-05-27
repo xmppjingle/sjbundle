@@ -68,7 +68,7 @@ public class Parser {
         if (s == null) {
             throw (new RuntimeException("Tried to costruct a new Parser with a null String"));
         }
-        str = s;
+        str = s.trim();
         index = 0;
     }
 

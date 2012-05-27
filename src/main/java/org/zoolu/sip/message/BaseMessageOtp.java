@@ -530,6 +530,7 @@ public abstract class BaseMessageOtp extends BaseMessage {
     public void setBody(String content_type, String body) {
         removeBody();
         if (body != null && body.length() > 0) {
+            body = body.trim();
             setContentTypeHeader(new ContentTypeHeader(content_type));
             setContentLengthHeader(new ContentLengthHeader(body.length()));
             this.body = body;

@@ -30,7 +30,8 @@ public class TestParser extends TestCase {
                 "s=Asterisk PBX 1.6.0.26-FONCORE-r78\n" +
                 "c=IN IP4 194.183.72.28\n" +
                 "t=0 0\n" +
-                "m=audio 0 RTP/AVP 18 112 3 0";
+                "m=audio 0 RTP/AVP 18 112 3 0\n" +
+                "\0\0\0\0\0\0\0\0\0";
 
         final Message m = new Message(sipString);
 

@@ -120,7 +120,7 @@ public abstract class BaseMessage {
      */
     public BaseMessage(byte[] data, int offset, int len) {
         init();
-        message = new String(data, offset, len);
+        message = new String(data, offset, len).trim();
     }
 
     /**
@@ -130,7 +130,7 @@ public abstract class BaseMessage {
      */
     public BaseMessage(DatagramPacket packet) {
         init();
-        message = new String(packet.getData(), packet.getOffset(), packet.getLength());
+        message = new String(packet.getData(), packet.getOffset(), packet.getLength()).trim();
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract class BaseMessage {
      */
     public BaseMessage(String str) {
         init();
-        message = str;
+        message = str.trim();
     }
 
     /**
@@ -169,7 +169,7 @@ public abstract class BaseMessage {
      * @param message
      */
     public void setMessage(String message) {
-        this.message = message;
+        this.message = message.trim();
     }
 
     /**
