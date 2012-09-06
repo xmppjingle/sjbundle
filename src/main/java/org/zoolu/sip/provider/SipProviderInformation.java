@@ -34,6 +34,7 @@ public class SipProviderInformation implements SipProviderInfoInterface {
     public SipProviderInformation(String via_addr, int hostPort) {
         this.via_addr = via_addr;
         this.hostPort = hostPort;
+        this.ip=this.via_addr;
     }
 
     // ***************** Readable/configurable attributes *****************
@@ -43,6 +44,8 @@ public class SipProviderInformation implements SipProviderInfoInterface {
      * Use 'auto-configuration' for auto detection, or let it undefined.
      */
     String via_addr = null;
+
+    String ip;
 
     /**
      * Local SIP port
@@ -165,7 +168,11 @@ public class SipProviderInformation implements SipProviderInfoInterface {
         return "z9hG4bK" + Random.nextNumString(8);
     }
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
     public String getIP() {
-        return via_addr;
+        return ip;
     }
 }

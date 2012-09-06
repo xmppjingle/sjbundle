@@ -92,7 +92,7 @@ public class SipChannel {
         try {
             datagramChannel.send(byteBuffer, address != null ? address : remoteAddress);
         } catch (IOException e) {
-            log.error("Could Not send Packet: ");
+            log.error("Could Not send Packet", e);
         }
     }
 
@@ -100,7 +100,7 @@ public class SipChannel {
         try {
             datagramChannel.close();
         } catch (IOException e) {
-            log.error("Erro closing DatagramChannel", e);
+            log.error("Error closing DatagramChannel", e);
         }
     }
 

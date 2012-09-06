@@ -92,7 +92,7 @@ public class SdpFactory {
         sessionDescriptionImpl.setVersion(protoVersionField);
 
         OriginField originImpl;
-        originImpl = (OriginField) this.createOrigin("user", sipProvider.getIP());
+        originImpl = (OriginField) this.createOrigin("user", sipProvider.getViaAddress());
         sessionDescriptionImpl.setOrigin(originImpl);
 
         SessionNameField sessionNameImpl = new SessionNameField();

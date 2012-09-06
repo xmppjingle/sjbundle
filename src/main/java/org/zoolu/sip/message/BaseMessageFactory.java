@@ -359,7 +359,7 @@ public abstract class BaseMessageFactory {
             }
         }
 
-        NameAddress contact = new NameAddress(new StringBuilder().append(contactUser).append(sipProvider.getIP()).append(":").append(sipProvider.getPort()).toString());
+        NameAddress contact = new NameAddress(new StringBuilder().append(contactUser).append(sipProvider.getViaAddress()).append(":").append(sipProvider.getPort()).toString());
         Message ack = createRequest(SipMethods.ACK, requestUri, to.getNameAddress(), from.getNameAddress(), contact, resp.getViaHeader() != null ? resp.getViaHeader().getProtocol() : sipProvider.getDefaultTransport(), viaAddr, hostPort, rport, resp.getCallIdHeader() != null ? resp.getCallIdHeader().getCallId() : "12345678", resp.getCSeqHeader() != null ? resp.getCSeqHeader().getSequenceNumber() : 1, from.getParameter("tag"), to.getParameter("tag"), branch, body);
 
         if (code >= 200 && code < 300) {
