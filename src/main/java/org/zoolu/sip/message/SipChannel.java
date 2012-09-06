@@ -89,10 +89,11 @@ public class SipChannel {
     public void send(ByteBuffer byteBuffer, SocketAddress address) {
         lastSentTimestamp = System.currentTimeMillis();
         log.debug("Sending UDP Packet...");
+        final SocketAddress dest = address != null ? address : remoteAddress;
         try {
-            datagramChannel.send(byteBuffer, address != null ? address : remoteAddress);
+            datagramChannel.send(byteBuffer, dest);
         } catch (IOException e) {
-            log.error("Could Not send Packet", e);
+            log.error("Could Not send Packet. Target:" + dest.toString(), e);
         }
     }
 
