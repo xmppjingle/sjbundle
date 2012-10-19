@@ -1869,7 +1869,7 @@ public abstract class BaseMessage {
             message = message + "\r\n" + body;
         } else {
             setContentLengthHeader(new ContentLengthHeader(0));
-            message = message + "\r\n";
+            message = message;
         }
     }
 

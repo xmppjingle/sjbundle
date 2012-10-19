@@ -49,10 +49,17 @@ public class TestParser extends TestCase {
     public void testContactPortparsing(){
 
         final Message m = new Message(sipString);
-
         int port = m.getContactHeader().getNameAddress().getAddress().getPort();
-
         System.out.println("port: " + port);
+
+    }
+
+    public void testCarriage(){
+
+        final String a = "\r\n";
+        final String b = a.trim();
+
+        assertNotSame(a,b);
 
     }
 

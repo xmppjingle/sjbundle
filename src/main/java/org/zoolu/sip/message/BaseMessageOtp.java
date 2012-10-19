@@ -174,6 +174,7 @@ public abstract class BaseMessageOtp extends BaseMessage {
         if (body != null) {
             str.append(body);
         }
+        str.append("\r\n");
         return str.toString();
     }
 
