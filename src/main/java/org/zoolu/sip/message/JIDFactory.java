@@ -28,20 +28,30 @@
 package org.zoolu.sip.message;
 
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.xmpp.packet.JID;
 import org.zoolu.tools.ConcurrentTimelineHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 public class JIDFactory {
 
-    private final ConcurrentTimelineHashMap<String, JID> jidCache = new ConcurrentTimelineHashMap<String, JID>();
+    private final ConcurrentLinkedHashMap<String, JID> jidCache = new ConcurrentLinkedHashMap.Builder<String, JID>()
+            .maximumWeightedCapacity(4000)
+            .build();
+
     private static JIDFactory jidFactory;
     private final List<JIDFormatter> jidPrepFilters = new ArrayList<JIDFormatter>();
-    private final int MAX_ENTRIES = 40000;
 
     private JIDFactory() {
+    }
+
+    /*only for testing purposes
+     */
+    public boolean isCached(String str) {
+        return jidCache.containsKey(str);
     }
 
     public static JIDFactory getInstance() {
@@ -54,10 +64,6 @@ public class JIDFactory {
     public JID getJID(String str) throws IllegalArgumentException {
         if (jidCache.containsKey(str)) {
             return jidCache.get(str);
-        }
-
-        if (jidCache.size() > MAX_ENTRIES) {
-            reset();
         }
 
         for (final JIDFormatter filter : jidPrepFilters) {
