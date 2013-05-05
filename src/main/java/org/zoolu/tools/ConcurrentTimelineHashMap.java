@@ -1,80 +1,285 @@
-/*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+/* *
+ *  @author Thiago Camargo (barata7@gmail.com)
+ *  @author Benhur Langoni (bhlangonijr@gmail.com)
  *
- *  This file is part of MjSip (http://www.mjsip.org)
- *
- *  MjSip is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  MjSip is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with MjSip; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *  Author(s):
- *  Luca Veltri (luca.veltri@unipr.it)
- *
- *  Modified:
- *  Benhur Langoni (bhlangonijr@gmail.com)
- *  Thiago Camargo (barata7@gmail.com)
  */
 
 package org.zoolu.tools;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import org.apache.log4j.Logger;
 
-public class ConcurrentTimelineHashMap<T, S> extends ConcurrentHashMap<T, S> {
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    final private ConcurrentSkipListMap<Long, ConcurrentHashMap<T, T>> timeoutPending = new ConcurrentSkipListMap<Long, ConcurrentHashMap<T, T>>();
+public class ConcurrentTimelineHashMap <K, V>  extends java.util.AbstractMap<K,V>
+        implements java.util.concurrent.ConcurrentMap<K,V>, java.io.Serializable {
+    static final Logger log = Logger.getLogger(ConcurrentTimelineHashMap.class);
 
-    public S put(final T t, final S s) {
+    private final ConcurrentLinkedHashMap<K, V> map;
+    private final ConcurrentLinkedHashMap<K, Long> expireMap;
+    private final ScheduledExecutorService scheduledService;
+    private final ExecutorService service;
+    private long ttl = DEFAULT_TTL;
+    private long purgeCounterLimit = DEFAULT_PURGE_LIMIT;
+    private long purgeDelay = DEFAULT_PURGE_DELAY;
 
-        final long timestamp = System.currentTimeMillis();
-        ConcurrentHashMap<T, T> frame = this.timeoutPending.get(timestamp);
+    private static final int DEFAULT_MAX_ENTRIES = 5000;
+    private static final long DEFAULT_TTL = 1000 * 60 * 60;
+    private static final long DEFAULT_PURGE_DELAY = 1000 * 60 * 10;
+    private static final long DEFAULT_PURGE_LIMIT = 2000;
 
-        if (frame == null) {
-            synchronized (timeoutPending) {
-                frame = this.timeoutPending.get(timestamp);
-                if (frame == null) {
-                    frame = new ConcurrentHashMap<T, T>();
-                    this.timeoutPending.put(timestamp, frame);
+    private final AtomicInteger counter = new AtomicInteger(0);
+
+    private Future purgeTask = null;
+
+    public ConcurrentTimelineHashMap() {
+        this(DEFAULT_MAX_ENTRIES, DEFAULT_TTL, DEFAULT_PURGE_DELAY);
+    }
+
+    public ConcurrentTimelineHashMap(int maxEntries, long timeToLive) {
+        this(maxEntries, timeToLive, DEFAULT_PURGE_DELAY);
+    }
+
+    public ConcurrentTimelineHashMap(int maxEntries, long timeToLive, long purgeDelay) {
+        map = new ConcurrentLinkedHashMap.Builder<K, V>()
+                .maximumWeightedCapacity(maxEntries)
+                .build();
+        expireMap = new ConcurrentLinkedHashMap.Builder<K, Long>()
+                .maximumWeightedCapacity(maxEntries)
+                .build();
+        setTtl(timeToLive);
+        service = Executors.newSingleThreadExecutor(new NamingThreadFactory("ConcurrenExpirableHashMap.Task"));
+        scheduledService = Executors.newSingleThreadScheduledExecutor(
+                new NamingThreadFactory("ConcurrenExpirableHashMap.Scheduled.Task"));
+        setPurgeDelay(purgeDelay);
+
+        enableScheduledPurge();
+
+    }
+
+    public void enableScheduledPurge() {
+        if (purgeTask != null) {
+            log.warn("There is already an active scheduled purge task");
+            return;
+        }
+        purgeTask = scheduledService.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                try {
+                    cleanUpExpiredWithNoResult().get(); //delay scheduling of next execution if current
+                                                        // is taking too long
+                } catch (Exception e) {
+                    log.error("Error cleaning up expired entries: ",e);
                 }
             }
+        }, getPurgeDelay(), getPurgeDelay(), TimeUnit.MILLISECONDS);
+    }
+
+    public void disableScheduledPurge() {
+        if (purgeTask == null) {
+            log.warn("There is not active scheduled purge task running");
+            return;
         }
-        frame.put(t, t);
-        return super.put(t, s);
-
+        purgeTask.cancel(true);
     }
 
-    public List<S> cleanUpExpired(final long mileseconds) {
-        final long lastValid = System.currentTimeMillis() - (mileseconds);
-        return cleanUpOlderThan(lastValid);
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        return map.entrySet();
     }
 
-    public List<S> cleanUpOlderThan(final long timeInMileseconds) {
-        final List<S> removed = new ArrayList<S>();
-        for (final Map.Entry<Long, ConcurrentHashMap<T, T>> entry : timeoutPending.headMap(timeInMileseconds).entrySet()) {
-            if (entry != null) {
-                for (final T t : entry.getValue().values()) {
-                    if (t != null) {
-                        final S s = this.remove(t);
-                        removed.add(s);
-                    }
-                }
-                timeoutPending.remove(entry.getKey());
+    public void putAll(Map<? extends K, ? extends V> m) {
+        map.putAll(m);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return map.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return map.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return map.toString();
+    }
+
+    public boolean remove(Object key, Object value) {
+        final boolean r = map.remove(key, value);
+        if (r) {
+            expireMap.remove(key);
+        }
+        return  r;
+    }
+
+    @Override
+    public Set<K> keySet() {
+        return map.keySet();
+    }
+
+    @Override
+    public Collection<V> values() {
+        return map.values();
+    }
+
+    public boolean replace(K key, V oldValue, V newValue) {
+        return map.replace(key, oldValue, newValue);
+    }
+
+    public V replace(K key, V value) {
+        return map.replace(key, value);
+    }
+
+
+    public int capacity() {
+        return map.capacity();
+    }
+
+    public void setCapacity(int capacity) {
+        expireMap.setCapacity(capacity);
+        map.setCapacity(capacity);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
+
+    public int weightedSize() {
+        return map.weightedSize();
+    }
+
+    @Override
+    public void clear() {
+        expireMap.clear();
+        map.clear();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return map.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return map.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+        return map.get(key);
+    }
+
+    public V put(K key, V value) {
+        if  (getPurgeCounterLimit() > 0 &&
+                counter.incrementAndGet() > getPurgeCounterLimit() &&
+                counter.getAndAdd(0) > getPurgeCounterLimit()) {
+            cleanUpExpiredWithNoResult();
+        }
+        expireMap.put(key, System.currentTimeMillis());
+        return map.put(key, value);
+    }
+
+    public V putIfAbsent(K key, V value) {
+        if (getPurgeCounterLimit() > 0 &&
+                counter.incrementAndGet() > getPurgeCounterLimit() &&
+                counter.getAndAdd(0) > getPurgeCounterLimit()) {
+            cleanUpExpiredWithNoResult();
+        }
+        expireMap.putIfAbsent(key, System.currentTimeMillis());
+        return map.putIfAbsent(key, value);
+    }
+
+    @Override
+    public V remove(Object key) {
+        expireMap.remove(key);
+        return map.remove(key);
+    }
+
+    /**
+     * Force purge of all expired entries for this map
+     *
+     * @param timeout
+     * @return
+     */
+    public List<V> cleanUpExpired(final long timeout) {
+
+        List<V> l = new ArrayList<V>();
+
+        for (Entry<K, Long> entry: expireMap.entrySet()) {
+            if (System.currentTimeMillis() - entry.getValue() > timeout) {
+                l.add(map.get(entry.getKey()));
+                expireMap.remove(entry.getKey());
+                map.remove(entry.getKey());
             }
         }
-        return removed;
+
+        return l;
     }
 
+    /**
+     * Force purge of all expired entries for this map
+     * using default time to live
+     * @return
+     */
+    public List<V> cleanUpExpired() {
+        return cleanUpExpired(getTtl());
+    }
+
+    private Future cleanUpExpiredWithNoResult() {
+
+        return service.submit(new Runnable() {
+            public void run() {
+                cleanUpExpired(getTtl());
+            }
+        });
+
+    }
+
+    public long getTtl() {
+        return ttl;
+    }
+
+    /**
+     * Time to live for expiring the entries
+     * @param ttl
+     */
+    public void setTtl(long ttl) {
+        this.ttl = ttl;
+    }
+
+    public long getPurgeCounterLimit() {
+        return purgeCounterLimit;
+    }
+
+    /**
+     * Define a threshold limit (on put & putIfAbsent count) for checking for
+     * expired entries
+     * @param purgeCounterLimit
+     */
+    public void setPurgeCounterLimit(long purgeCounterLimit) {
+        this.purgeCounterLimit = purgeCounterLimit;
+    }
+
+    public long getPurgeDelay() {
+        return purgeDelay;
+    }
+
+    /**
+     * Delay for running the task for checking expired entries
+     * accordingly with the defined time to live
+     * @param purgeDelay
+     */
+    public void setPurgeDelay(long purgeDelay) {
+        this.purgeDelay = purgeDelay;
+    }
 }
