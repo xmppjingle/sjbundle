@@ -135,7 +135,7 @@ public class ConcurrentTimelineHashMap <K, V>  extends java.util.AbstractMap<K,V
     }
 
 
-    public int capacity() {
+    public long capacity() {
         return map.capacity();
     }
 
@@ -154,7 +154,7 @@ public class ConcurrentTimelineHashMap <K, V>  extends java.util.AbstractMap<K,V
         return map.size();
     }
 
-    public int weightedSize() {
+    public long weightedSize() {
         return map.weightedSize();
     }
 
