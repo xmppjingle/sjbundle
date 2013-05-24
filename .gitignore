@@ -3,3 +3,10 @@ target/
 .idea/
 *.iml
 *.iws
+
+# Package Files #
+*.jar
+*.war
+*.ear
+.DS_Store
+
