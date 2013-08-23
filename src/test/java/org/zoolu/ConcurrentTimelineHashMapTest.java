@@ -80,4 +80,22 @@ public class ConcurrentTimelineHashMapTest extends TestCase {
 
     }
 
+    public void testCapacity() throws InterruptedException {
+        ConcurrentTimelineHashMap<String, String> map = new ConcurrentTimelineHashMap<String, String>();
+
+        for (int i=1;i<=5000;i++) {
+            map.put("test"+i,"test"+i);
+        }
+
+        Thread.sleep(2000);
+
+        for (int i=1;i<=5000;i++) {
+            assertEquals(map.get("test"+i),"test"+i);
+        }
+
+
+    }
+
+
+
 }

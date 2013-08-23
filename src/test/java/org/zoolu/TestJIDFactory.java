@@ -32,8 +32,28 @@ public class TestJIDFactory extends TestCase {
         System.out.println("Time " +(System.currentTimeMillis()-init));
 
 
+    }
+
+
+    public void testJID() {
+
+        JID jid = JIDFactory.getInstance().getJID("xmpp.org");
+
+        String s = null;
+        String z = "test";
+
+        boolean b =  z.equals(s);
+
+        System.out.println("B="+b);
+        System.out.println("Node:   "+jid.getNode());
+        System.out.println("Domain: "+jid.getDomain());
+        System.out.println("Resource: "+jid.getResource());
+
+
+
 
 
 
     }
+
 }
