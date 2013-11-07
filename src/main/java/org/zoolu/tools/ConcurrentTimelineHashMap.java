@@ -82,6 +82,7 @@ public class ConcurrentTimelineHashMap <K, V>  extends java.util.AbstractMap<K,V
             return;
         }
         purgeTask.cancel(true);
+        scheduledService.shutdownNow();
     }
 
     @Override
@@ -281,5 +282,13 @@ public class ConcurrentTimelineHashMap <K, V>  extends java.util.AbstractMap<K,V
      */
     public void setPurgeDelay(long purgeDelay) {
         this.purgeDelay = purgeDelay;
+    }
+
+    /**
+     * Destroy the reference to the map and its items.
+     * Prevents
+     */
+    public void destroy(){
+        disableScheduledPurge();
     }
 }
