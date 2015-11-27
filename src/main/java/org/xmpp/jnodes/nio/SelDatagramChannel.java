@@ -20,6 +20,8 @@ public class SelDatagramChannel implements ListenerDatagramChannel {
     protected final DatagramChannel channel;
     private DatagramListener datagramListener;
     private final static Object obj = new Object();
+    
+    private static final int MAX_DATAGRAM_LENGTH = 2048;
 
     private static void init() {
         try {
@@ -63,7 +65,7 @@ public class SelDatagramChannel implements ListenerDatagramChannel {
                                         continue;
                                     }
 
-                                    final ByteBuffer b = ByteBuffer.allocateDirect(1450);
+                                    final ByteBuffer b = ByteBuffer.allocateDirect(MAX_DATAGRAM_LENGTH);
                                     final SocketAddress clientAddress;
                                     synchronized (sdc) {
                                         clientAddress = sdc.channel.receive(b);
