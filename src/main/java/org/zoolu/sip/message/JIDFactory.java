@@ -29,16 +29,13 @@ package org.zoolu.sip.message;
 
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import org.xmpp.packet.JID;
-import org.zoolu.tools.ConcurrentTimelineHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 public class JIDFactory {
 
-    private final ConcurrentLinkedHashMap<String, JID> jidCache = new ConcurrentLinkedHashMap.Builder<String, JID>()
+    private final ConcurrentLinkedHashMap<String, String> jidCache = new ConcurrentLinkedHashMap.Builder<String, String>()
             .maximumWeightedCapacity(4000)
             .build();
 
@@ -61,7 +58,7 @@ public class JIDFactory {
         return jidFactory;
     }
 
-    public JID getJID(String str) throws IllegalArgumentException {
+    public String getJID(String str) throws IllegalArgumentException {
         if (jidCache.containsKey(str)) {
             return jidCache.get(str);
         }
@@ -70,7 +67,7 @@ public class JIDFactory {
             str = filter.prepForJID(str);
         }
 
-        final JID jidEntry = new JID(str);
+        final String jidEntry = new String(str);
         jidCache.put(str, jidEntry);
         return jidEntry;
     }
@@ -79,7 +76,7 @@ public class JIDFactory {
         jidPrepFilters.add(filter);
     }
 
-    public JID getJID(final String node, final String domain, final String resource) throws IllegalArgumentException {
+    public String getJID(final String node, final String domain, final String resource) throws IllegalArgumentException {
 
         final StringBuilder str = new StringBuilder();
         if (node != null) {

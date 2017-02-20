@@ -30,7 +30,6 @@ import gov.nist.core.Separators;
 import javax.sdp.SdpException;
 import javax.sdp.SdpParseException;
 import java.util.LinkedList;
-import java.util.ListIterator;
 
 /**
  * Repeat SDP Field (part of the time field).

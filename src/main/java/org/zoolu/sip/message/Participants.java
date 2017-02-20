@@ -28,7 +28,6 @@
 package org.zoolu.sip.message;
 
 import org.apache.log4j.Logger;
-import org.xmpp.packet.JID;
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.address.SipURL;
 import org.zoolu.sip.header.FromHeader;
@@ -38,19 +37,19 @@ import org.zoolu.sip.header.ToHeader;
 public class Participants {
 
     final private static Logger log = Logger.getLogger(Participants.class);
-    private final JID initiator;
-    private final JID responder;
+    private final String initiator;
+    private final String responder;
 
-    public Participants(final JID initiator, final JID responder) {
+    public Participants(final String initiator, final String responder) {
         this.initiator = initiator;
         this.responder = responder;
     }
 
-    public JID getInitiator() {
+    public String getInitiator() {
         return initiator;
     }
 
-    public JID getResponder() {
+    public String getResponder() {
         return responder;
     }
 
@@ -100,8 +99,8 @@ public class Participants {
                 tResource = "/" + tHeader.getTag();
             }
 
-            final JID initiator = JIDFactory.getInstance().getJID(new StringBuilder().append(from).append(fResource).toString());
-            final JID responder = JIDFactory.getInstance().getJID(new StringBuilder().append(to).append(tResource).toString());
+            final String initiator = JIDFactory.getInstance().getJID(new StringBuilder().append(from).append(fResource).toString());
+            final String responder = JIDFactory.getInstance().getJID(new StringBuilder().append(to).append(tResource).toString());
 
             return new Participants(initiator, responder);
 
@@ -111,7 +110,7 @@ public class Participants {
         }
     }
 
-    public static JID getFromJidForResponse(final Message msg) {
+    public static String getFromJidForResponse(final Message msg) {
 
         if (msg.getToHeader() == null) {
             return null;

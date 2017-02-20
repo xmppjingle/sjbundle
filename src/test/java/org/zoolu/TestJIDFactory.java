@@ -1,8 +1,6 @@
 package org.zoolu;
 
 import junit.framework.TestCase;
-import org.apache.log4j.BasicConfigurator;
-import org.xmpp.packet.JID;
 import org.zoolu.sip.message.JIDFactory;
 
 /**
@@ -31,13 +29,12 @@ public class TestJIDFactory extends TestCase {
 
         System.out.println("Time " +(System.currentTimeMillis()-init));
 
-
     }
 
 
     public void testJID() {
 
-        JID jid = JIDFactory.getInstance().getJID("xmpp.org");
+        String jid = JIDFactory.getInstance().getJID("xmpp.org");
 
         String s = null;
         String z = "test";
@@ -45,13 +42,6 @@ public class TestJIDFactory extends TestCase {
         boolean b =  z.equals(s);
 
         System.out.println("B="+b);
-        System.out.println("Node:   "+jid.getNode());
-        System.out.println("Domain: "+jid.getDomain());
-        System.out.println("Resource: "+jid.getResource());
-
-
-
-
 
 
     }

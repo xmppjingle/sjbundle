@@ -2,7 +2,6 @@ package org.zoolu;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import junit.framework.TestCase;
-import org.xmpp.packet.JID;
 import org.zoolu.sip.message.JIDFactory;
 import org.zoolu.tools.ConcurrentTimelineHashMap;
 
@@ -27,10 +26,10 @@ public class TestJingle extends TestCase {
 
     public void test2() {
 
-        final ConcurrentLinkedHashMap<String, JID> jidCache = new ConcurrentLinkedHashMap.Builder<String, JID>()
+        final ConcurrentLinkedHashMap<String, String> jidCache = new ConcurrentLinkedHashMap.Builder<String, String>()
                 .maximumWeightedCapacity(400)
                 .build();
-        jidCache.put("t",new JID("tete"));
+        jidCache.put("t", "tete");
 
 
     }
