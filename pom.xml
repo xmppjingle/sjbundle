@@ -33,7 +33,7 @@
 
     <groupId>org.jinglenodes</groupId>
     <artifactId>sjbundle</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9-SNAPSHOT</version>
 
     <build>
         <plugins>

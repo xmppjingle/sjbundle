@@ -64,66 +64,47 @@ public class DigestAuthentication {
     protected String response;
 
     protected String body;
+    protected boolean useSecret;
 
     final static char pseudo[] = {'0', '1', '2',
             '3', '4', '5', '6', '7', '8',
             '9', 'a', 'b', 'c', 'd', 'e',
             'f'};
 
-    /**
-     * Costructs a new DigestAuthentication.
-     */
     protected DigestAuthentication() {
     }
 
-    /**
-     * Costructs a new DigestAuthentication.
-     *
-     * @param method
-     * @param ah
-     * @param body
-     * @param passwd
-     * @param nc
-     */
+
     public DigestAuthentication(String method, AuthorizationHeader ah, String body, String passwd, String nc) {
-        init(method, ah, body, passwd, nc);
+        this(method, ah, body, passwd, nc, false);
     }
 
-    /**
-     * Costructs a new DigestAuthentication.
-     *
-     * @param method
-     * @param uri
-     * @param ah
-     * @param qop
-     * @param body
-     * @param username
-     * @param passwd
-     * @param nc
-     */
-    public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop, String body, String username, String passwd, String nc) {
-        init(method, ah, body, passwd, nc);
+    public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop,
+                                String body, String username, String passwd, String nc) {
+        this(method, uri, ah, qop, body, username, passwd, nc, false);
+    }
+
+    public DigestAuthentication(String method, String uri, AuthenticationInfoHeader ah, String qop,
+                                String body, String username, String passwd, String nc, String realm) {
+        this(method, uri, ah, qop, body, username, passwd, nc, realm, false);
+    }
+
+    public DigestAuthentication(String method, AuthorizationHeader ah, String body, String passwd, String nc, boolean useSecret) {
+        init(method, ah, body, passwd, nc, useSecret);
+    }
+
+    public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop,
+                                String body, String username, String passwd, String nc, boolean useSecret) {
+        init(method, ah, body, passwd, nc, useSecret);
         this.uri = uri;
         this.qop = qop;
         this.username = username;
         this.nc = nc;
     }
 
-    /**
-     * Costructs a new DigestAuthentication.
-     *
-     * @param method
-     * @param uri
-     * @param ah
-     * @param qop
-     * @param body
-     * @param username
-     * @param passwd
-     * @param nc
-     * @param realm
-     */
-    public DigestAuthentication(String method, String uri, AuthenticationInfoHeader ah, String qop, String body, String username, String passwd, String nc, String realm) {
-        init(method, ah, body, passwd, nc);
+    public DigestAuthentication(String method, String uri, AuthenticationInfoHeader ah, String qop,
+                                String body, String username, String passwd, String nc, String realm, boolean useSecret) {
+        init(method, ah, body, passwd, nc, useSecret);
         this.uri = uri;
         this.qop = qop;
         this.username = username;
@@ -131,22 +112,14 @@ public class DigestAuthentication {
         this.realm = realm;
     }
 
-    /**
-     * Costructs a new DigestAuthentication.
-     *
-     * @param method
-     * @param ah
-     * @param body
-     * @param passwd
-     * @param nc
-     */
-    private void init(String method, AuthenticationHeader ah, String body, String passwd, String nc) {
+    private void init(String method, AuthenticationHeader ah, String body, String passwd, String nc, boolean useSecret) {
         this.method = method;
         this.username = ah.getUsernameParam();
         this.passwd = passwd;
         this.realm = ah.getRealmParam();
         this.opaque = ah.getOpaqueParam();
         this.nonce = ah.getNonceParam();
+        this.useSecret = useSecret;
         if (this.nonce == null) {
             this.nonce = ah.getNextnonceParam();
         }
@@ -359,7 +332,11 @@ public class DigestAuthentication {
             if (cnonce != null) {
                 sb2.append(cnonce);
             }
-            return cat(getMD5(sb.toString()), sb2.toString().getBytes());
+            if (useSecret) {
+                return cat(passwd.getBytes(), sb2.toString().getBytes());
+            } else {
+                return cat(getMD5(sb.toString()), sb2.toString().getBytes());
+            }
         }
     }
 
