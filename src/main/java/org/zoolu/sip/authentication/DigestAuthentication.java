@@ -257,7 +257,7 @@ public class DigestAuthentication {
      * @return
      */
     public String getResponse() {
-        String secret = toHex(getMD5(A1()));
+        String secret = this.useSecret ? passwd : toHex(getMD5(A1()));
         StringBuilder sb = new StringBuilder();
         if (nonce != null) {
             sb.append(nonce);
@@ -333,7 +333,7 @@ public class DigestAuthentication {
                 sb2.append(cnonce);
             }
             if (useSecret) {
-                return cat(passwd.getBytes(), sb2.toString().getBytes());
+                return cat(hexStringToByteArray(passwd) , sb2.toString().getBytes());
             } else {
                 return cat(getMD5(sb.toString()), sb2.toString().getBytes());
             }
@@ -437,6 +437,16 @@ public class DigestAuthentication {
         }
 
         return new String(out);
+    }
+
+    static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
 }
