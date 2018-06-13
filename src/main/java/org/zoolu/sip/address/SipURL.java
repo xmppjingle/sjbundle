@@ -54,8 +54,7 @@ public class SipURL {
      * @param sipurl
      */
     public SipURL(String sipurl) {
-        sipurl = sipurl.toLowerCase();
-        if (sipurl.startsWith("sip:")) {
+        if (sipurl.toLowerCase().startsWith("sip:")) {
             url = sipurl;
         } else {
             url = "sip:" + sipurl;
